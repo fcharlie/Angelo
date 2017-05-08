@@ -30,7 +30,15 @@ namespace Angelo
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                var session = new Session
+                {
+                    Context = context
+                };
+                var b = await session.Processing();
+                if (!b)
+                {
+
+                }
             });
         }
     }
