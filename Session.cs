@@ -166,7 +166,7 @@ namespace Angelo
         }
         public async Task Handle()
         {
-            Context.Response.Headers["Server"] = "Aiglon/1.0";
+            Context.Response.Headers["Server"] = "Angelo/1.0";
             if (Context.Request.Method == "GET")
             {
                 await ExchangeRefs();
