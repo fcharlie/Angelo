@@ -42,10 +42,7 @@ namespace Angelo
 
             app.Run(async (context) =>
             {
-                var session = new Session
-                {
-                    Context = context
-                };
+                var session = new Session(context);
                 await session.Handle();
             });
         }

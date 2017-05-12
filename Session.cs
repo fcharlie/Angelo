@@ -9,8 +9,12 @@ namespace Angelo
 {
     public class Session
     {
-        public HttpContext Context { get; set; }
-
+        private HttpContext Context { get; }
+        public Session(HttpContext context) 
+        {
+            this.Context = context;
+               
+        }
         private async Task Unauthorized()
         {
             Context.Response.StatusCode = StatusCodes.Status401Unauthorized;
