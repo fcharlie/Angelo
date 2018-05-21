@@ -10,10 +10,10 @@ namespace Angelo
     public class Session
     {
         private HttpContext Context { get; }
-        public Session(HttpContext context) 
+        public Session(HttpContext context)
         {
             this.Context = context;
-               
+
         }
         private async Task Unauthorized()
         {
@@ -64,6 +64,12 @@ namespace Angelo
             HeadersFill();
             Process process = new Process();
             process.StartInfo.FileName = AppconfigProvider.config.Gitbin;
+            string version = "";
+            if (Context.Request.Headers.ContainsKey("Git-Protocol"))
+            {
+                version = Context.Request.Headers["Git-Protocol"];
+                process.StartInfo.Environment.Add("GIT_PROTOCOL", $"{version}");
+            }
             process.StartInfo.Environment.Add("GL_ID", $"user-{result.Userid}");
             process.StartInfo.RedirectStandardOutput = true;
             switch (Context.Request.Query["service"])
@@ -72,16 +78,22 @@ namespace Angelo
                     {
                         process.StartInfo.Arguments = $"upload-pack --stateless-rpc --advertise-refs \"{repodir}\"";
                         Context.Response.ContentType = "application/x-git-upload-pack-advertisement";
-                        var bytes = System.Text.Encoding.UTF8.GetBytes("001e# service=git-upload-pack\n0000");
-                        await Context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+                        if (version.Length == 0)
+                        {
+                            var bytes = System.Text.Encoding.UTF8.GetBytes("001e# service=git-upload-pack\n0000");
+                            await Context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+                        }
                     }
                     break;
                 case "git-receive-pack":
                     {
                         process.StartInfo.Arguments = $"receive-pack --stateless-rpc --advertise-refs \"{repodir}\"";
                         Context.Response.ContentType = "application/x-git-receive-pack-advertisement";
-                        var bytes2 = System.Text.Encoding.UTF8.GetBytes("001f# service=git-receive-pack\n0000");
-                        await Context.Response.Body.WriteAsync(bytes2, 0, bytes2.Length);
+                        if (version.Length == 0)
+                        {
+                            var bytes2 = System.Text.Encoding.UTF8.GetBytes("001f# service=git-receive-pack\n0000");
+                            await Context.Response.Body.WriteAsync(bytes2, 0, bytes2.Length);
+                        }
                     }
                     break;
                 default:
@@ -132,6 +144,11 @@ namespace Angelo
             process.StartInfo.FileName = AppconfigProvider.config.Gitbin;
             process.StartInfo.RedirectStandardInput = true;
             process.StartInfo.RedirectStandardOutput = true;
+            if (Context.Request.Headers.ContainsKey("Git-Protocol"))
+            {
+                var version = Context.Request.Headers["Git-Protocol"];
+                process.StartInfo.Environment.Add("GIT_PROTOCOL", $"{version}");
+            }
             process.StartInfo.Environment.Add("GL_ID", $"user-{result.Userid}");
             if (service == "git-upload-pack")
             {
