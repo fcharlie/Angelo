@@ -55,8 +55,9 @@ namespace Angelo
                 await Unauthorized();
                 return;
             }
-            var repodir = AppconfigProvider.PathcombineRoot(path);
-            if (!Directory.Exists(repodir))
+            var repoPath = AppconfigProvider.PathcombineRoot(path);
+            Console.WriteLine($"repoPath {repoPath}");
+            if (!Directory.Exists(repoPath))
             {
                 await NotFound();
                 return;
@@ -70,13 +71,13 @@ namespace Angelo
                 version = Context.Request.Headers["Git-Protocol"];
                 process.StartInfo.Environment.Add("GIT_PROTOCOL", $"{version}");
             }
-            process.StartInfo.Environment.Add("GL_ID", $"user-{result.Userid}");
+            process.StartInfo.Environment.Add("GL_ID", $"user-{result.UID}");
             process.StartInfo.RedirectStandardOutput = true;
             switch (Context.Request.Query["service"])
             {
                 case "git-upload-pack":
                     {
-                        process.StartInfo.Arguments = $"upload-pack --stateless-rpc --advertise-refs \"{repodir}\"";
+                        process.StartInfo.Arguments = $"upload-pack --stateless-rpc --advertise-refs \"{repoPath}\"";
                         Context.Response.ContentType = "application/x-git-upload-pack-advertisement";
                         if (version.Length == 0)
                         {
@@ -87,7 +88,7 @@ namespace Angelo
                     break;
                 case "git-receive-pack":
                     {
-                        process.StartInfo.Arguments = $"receive-pack --stateless-rpc --advertise-refs \"{repodir}\"";
+                        process.StartInfo.Arguments = $"receive-pack --stateless-rpc --advertise-refs \"{repoPath}\"";
                         Context.Response.ContentType = "application/x-git-receive-pack-advertisement";
                         if (version.Length == 0)
                         {
@@ -149,7 +150,7 @@ namespace Angelo
                 var version = Context.Request.Headers["Git-Protocol"];
                 process.StartInfo.Environment.Add("GIT_PROTOCOL", $"{version}");
             }
-            process.StartInfo.Environment.Add("GL_ID", $"user-{result.Userid}");
+            process.StartInfo.Environment.Add("GL_ID", $"user-{result.UID}");
             if (service == "git-upload-pack")
             {
                 process.StartInfo.Arguments = "upload-pack  --stateless-rpc  \"" + repodir + "\"";
